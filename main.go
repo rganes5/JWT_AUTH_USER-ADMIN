@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/rganes5/go-jwt-auth/controllers"
 	"github.com/rganes5/go-jwt-auth/initializers"
+	"github.com/rganes5/go-jwt-auth/middleware"
 )
 
 // Init will work first
@@ -18,6 +19,8 @@ func main() {
 	r := gin.Default()
 
 	r.POST("/signup", controllers.Signup)
+	r.POST("/login", controllers.Login)
+	r.GET("/validate", middleware.RequireAuth, controllers.Validate)
 
 	// 	c.JSON(200, gin.H{
 	// 		"message": "pong",
