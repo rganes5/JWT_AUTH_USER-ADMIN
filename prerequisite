@@ -1,0 +1,23 @@
+GORM:
+go get -u gorm.io/gorm
+
+GORM DRIVER(postgres):
+go get -u gorm.io/driver/postgres
+
+GIN:
+go get -u github.com/gin-gonic/gin
+
+BCRYPT:
+go get -u golang.org/x/crypto/bcrypt
+
+ENV:
+go get github.com/joho/godotenv
+
+JWT:
+go get -u github.com/golang-jwt/jwt/v5
+
+COMPILE DAEMON:
+go get github.com/githubnemo/CompileDaemon
+go install github.com/githubnemo/CompileDaemon
+
+
