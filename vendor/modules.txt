@@ -1,3 +1,6 @@
+# github.com/alessio/shellescape v1.4.1
+## explicit; go 1.14
+github.com/alessio/shellescape
 # github.com/bytedance/sonic v1.8.7
 ## explicit; go 1.15
 github.com/bytedance/sonic
@@ -112,6 +115,12 @@ github.com/pelletier/go-toml/v2/internal/characters
 github.com/pelletier/go-toml/v2/internal/danger
 github.com/pelletier/go-toml/v2/internal/tracker
 github.com/pelletier/go-toml/v2/unstable
+# github.com/tawesoft/golib/v2 v2.9.0
+## explicit; go 1.20
+github.com/tawesoft/golib/v2/dialog
+github.com/tawesoft/golib/v2/ks
+github.com/tawesoft/golib/v2/must
+github.com/tawesoft/golib/v2/operator
 # github.com/twitchyliquid64/golang-asm v0.15.1
 ## explicit; go 1.13
 github.com/twitchyliquid64/golang-asm/asm/arch
@@ -143,6 +152,10 @@ golang.org/x/crypto/bcrypt
 golang.org/x/crypto/blowfish
 golang.org/x/crypto/pbkdf2
 golang.org/x/crypto/sha3
+# golang.org/x/exp v0.0.0-20221208152030-732eee02a75a
+## explicit; go 1.18
+golang.org/x/exp/constraints
+golang.org/x/exp/utf8string
 # golang.org/x/net v0.9.0
 ## explicit; go 1.17
 golang.org/x/net/http/httpguts
@@ -153,7 +166,10 @@ golang.org/x/net/idna
 # golang.org/x/sys v0.7.0
 ## explicit; go 1.17
 golang.org/x/sys/cpu
+golang.org/x/sys/execabs
+golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/unix
+golang.org/x/sys/windows
 # golang.org/x/text v0.9.0
 ## explicit; go 1.17
 golang.org/x/text/cases

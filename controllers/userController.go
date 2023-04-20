@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 	"time"
@@ -12,112 +13,211 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-// SIGN UP
-func Signup(c *gin.Context) { // This will recieve the Gin context
+// // SIGN UP
+// func Signup(c *gin.Context) { // This will recieve the Gin context
 
-	// Get the email and password off req body
-	var body struct {
-		Email    string
-		Password string
-	}
+// 	// Get the email and password off req body
+// 	var body struct {
+// 		Email    string
+// 		Password string
+// 	}
 
-	if c.Bind(&body) != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Failed to read body",
-		})
-		return
-	}
-	//Hash the password
-	hash, err := bcrypt.GenerateFromPassword([]byte(body.Password), 10)
+// 	if c.Bind(&body) != nil {
+// 		c.JSON(http.StatusBadRequest, gin.H{
+// 			"error": "Failed to read body",
+// 		})
+// 		return
+// 	}
+// 	//Hash the password
+// 	hash, err := bcrypt.GenerateFromPassword([]byte(body.Password), 10)
 
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Failed to Hash password",
-		})
-		return
-	}
-	//Create the user
-	user := models.User{Email: body.Email, Password: string(hash)}
-	result := initializers.DB.Create(&user)
+// 	if err != nil {
+// 		c.JSON(http.StatusBadRequest, gin.H{
+// 			"error": "Failed to Hash password",
+// 		})
+// 		return
+// 	}
+// 	//Create the user
+// 	user := models.User{Email: body.Email, Password: string(hash)}
+// 	result := initializers.DB.Create(&user)
 
-	if result.Error != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Failed to create user",
-		})
-		return
-	}
+// 	if result.Error != nil {
+// 		c.JSON(http.StatusBadRequest, gin.H{
+// 			"error": "Failed to create user",
+// 		})
+// 		return
+// 	}
 
-	//Respond
-	c.JSON(http.StatusOK, gin.H{})
-}
+// 	//Respond
+// 	c.JSON(http.StatusOK, gin.H{})
+// }
 
-// LOGIN
-func Login(c *gin.Context) {
-	// Get the user email and password from req body
-	var body struct {
-		Email    string
-		Password string
-	}
+// // LOGIN
+// func Login(c *gin.Context) {
+// 	// Get the user email and password from req body
+// 	var body struct {
+// 		Email    string
+// 		Password string
+// 	}
 
-	if c.Bind(&body) != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Failed to read body",
-		})
-		return
-	}
+// 	if c.Bind(&body) != nil {
+// 		c.JSON(http.StatusBadRequest, gin.H{
+// 			"error": "Failed to read body",
+// 		})
+// 		return
+// 	}
 
-	//Look up requested user
-	var user models.User
-	initializers.DB.First(&user, "email = ?", body.Email)
+// 	//Look up requested user
+// 	var user models.User
+// 	initializers.DB.First(&user, "email = ?", body.Email)
 
-	if user.ID == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Invalid Email or Password",
-		})
-		return
-	}
+// 	if user.ID == 0 {
+// 		c.JSON(http.StatusBadRequest, gin.H{
+// 			"error": "Invalid Email or Password",
+// 		})
+// 		return
+// 	}
 
-	//Compare sent in pass with saved user pass hash
-	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(body.Password))
+// 	//Compare sent in pass with saved user pass hash
+// 	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(body.Password))
 
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Invalid Email or Password",
-		})
-		return
-	}
+// 	if err != nil {
+// 		c.JSON(http.StatusBadRequest, gin.H{
+// 			"error": "Invalid Email or Password",
+// 		})
+// 		return
+// 	}
 
-	//Generate a jwt token
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"sub": user.ID,
-		"exp": time.Now().Add(time.Hour * 24 * 30).Unix(),
-	})
+// 	//Generate a jwt token
+// 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+// 		"sub": user.ID,
+// 		"exp": time.Now().Add(time.Hour * 24 * 30).Unix(),
+// 	})
 
-	// Sign and get the complete encoded token as a string using the secret
-	tokenString, err := token.SignedString([]byte(os.Getenv("SECRET")))
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Failed to create token",
-		})
-		return
-	}
+// 	// Sign and get the complete encoded token as a string using the secret
+// 	tokenString, err := token.SignedString([]byte(os.Getenv("SECRET")))
+// 	if err != nil {
+// 		c.JSON(http.StatusBadRequest, gin.H{
+// 			"error": "Failed to create token",
+// 		})
+// 		return
+// 	}
 
-	//Send in back
-	c.SetSameSite(http.SameSiteLaxMode)
-	c.SetCookie("Authorization", tokenString, 3600*24*30, "", "", false, true)
-	c.JSON(http.StatusOK, gin.H{})
+// 	//Send in back
+// 	c.SetSameSite(http.SameSiteLaxMode)
+// 	c.SetCookie("Authorization", tokenString, 3600*24*30, "", "", false, true)
+// 	c.JSON(http.StatusOK, gin.H{})
 
-}
+// }
 
 // Authorization middlewares
 func Validate(c *gin.Context) {
 	// c.JSON(http.StatusOK, gin.H{
 	// 	"message": "I'm logged in",
-
 	user, _ := c.Get("user")
 	//if i wanted to do something with user
 	// user.(models.User).Email
 	c.JSON(http.StatusOK, gin.H{
 		"message": user,
 	})
+}
+
+////////////HANDLERS/////////////
+
+// Handler for user login/index page
+func IndexHandler(c *gin.Context) {
+	// user, _ := c.Get("user")
+	// fmt.Println(user)
+	// c.HTML(http.StatusOK, "index.html", gin.H{
+	// 	"message": user,
+	// })
+	c.HTML(http.StatusOK, "index.html", nil)
+}
+
+// Handler for user sign up page
+func UserSignupHandler(c *gin.Context) {
+	c.HTML(http.StatusOK, "userSignup.html", nil)
+}
+
+// Handler for User sign up
+func UserSubmitHandler(c *gin.Context) {
+	userName := c.Request.FormValue("Name")
+	userEmail := c.Request.FormValue("Email")
+	userPassword := []byte(c.Request.FormValue("Password"))
+	userNumber := c.Request.FormValue("Number")
+	// Hash the password with bcrypt
+	hashedPassword, err := bcrypt.GenerateFromPassword(userPassword, bcrypt.DefaultCost)
+	if err != nil {
+		panic("Failed To Hash Password")
+	}
+	//Inputting into the database
+	user := models.User{Name: userName, Email: userEmail, Password: string(hashedPassword), Number: userNumber}
+	result := initializers.DB.Create(&user)
+	if result.Error != nil {
+		c.HTML(http.StatusNotFound, "userSignup.html", gin.H{
+			"error": "Failed to add user into database. Please try again",
+		})
+		return
+	}
+	c.Redirect(http.StatusFound, "/")
+
+}
+
+// Handler for user Login page
+func UserLoginHandler(c *gin.Context) {
+	c.Header("Cache-Control", "no-cache,no-store,must-revalidate")
+	c.Header("Expires", "0")
+	userEmail := c.Request.FormValue("Email")
+	userPassword := []byte(c.Request.FormValue("Password"))
+	//Look up requested user
+	var user models.User
+	initializers.DB.First(&user, "email = ?", userEmail)
+
+	if user.ID == 0 {
+		c.HTML(http.StatusBadRequest, "index.html", gin.H{
+			"error": "Invalid Email",
+		})
+		return
+	}
+	//Compare sent in pass with saved user pass hash
+	err := bcrypt.CompareHashAndPassword([]byte(user.Password), userPassword)
+	if err != nil {
+		c.HTML(http.StatusBadRequest, "index.html", gin.H{
+			"error": "Invalid Password",
+		})
+		return
+	}
+
+	//Generate a jwt token
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"name": user.Name,
+		"exp":  time.Now().Add(time.Hour * 24 * 30).Unix(),
+	})
+	// Sign and get the complete encoded token as a string using the secret
+	tokenString, err := token.SignedString([]byte(os.Getenv("SECRET")))
+	if err != nil {
+		fmt.Println("Error")
+	}
+	//Send in back
+	c.SetSameSite(http.SameSiteLaxMode)
+	c.SetCookie("Authorization", tokenString, 3600*24*30, "", "", false, true)
+	//Redirecting to welcome page
+	fmt.Println("--", user.Role, user.Name, "SECRET", tokenString)
+	c.HTML(http.StatusOK, "welcomeUser.html", user.Name)
+
+}
+
+// Handler for User logout
+func LogoutHandler(c *gin.Context) {
+	c.Header("Cache-Control", "no-cache,no-store,must-revalidate")
+	c.Header("Expires", "0")
+	tokenString, err := c.Cookie("Authorization")
+	if err != nil {
+		c.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+	c.SetSameSite(http.SameSiteLaxMode)
+	c.SetCookie("Authorization", tokenString, -1, "", "", false, true)
+	c.Redirect(http.StatusFound, "/")
+
 }
