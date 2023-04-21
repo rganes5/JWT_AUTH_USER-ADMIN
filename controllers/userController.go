@@ -13,128 +13,17 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-// // SIGN UP
-// func Signup(c *gin.Context) { // This will recieve the Gin context
-
-// 	// Get the email and password off req body
-// 	var body struct {
-// 		Email    string
-// 		Password string
-// 	}
-
-// 	if c.Bind(&body) != nil {
-// 		c.JSON(http.StatusBadRequest, gin.H{
-// 			"error": "Failed to read body",
-// 		})
-// 		return
-// 	}
-// 	//Hash the password
-// 	hash, err := bcrypt.GenerateFromPassword([]byte(body.Password), 10)
-
-// 	if err != nil {
-// 		c.JSON(http.StatusBadRequest, gin.H{
-// 			"error": "Failed to Hash password",
-// 		})
-// 		return
-// 	}
-// 	//Create the user
-// 	user := models.User{Email: body.Email, Password: string(hash)}
-// 	result := initializers.DB.Create(&user)
-
-// 	if result.Error != nil {
-// 		c.JSON(http.StatusBadRequest, gin.H{
-// 			"error": "Failed to create user",
-// 		})
-// 		return
-// 	}
-
-// 	//Respond
-// 	c.JSON(http.StatusOK, gin.H{})
-// }
-
-// // LOGIN
-// func Login(c *gin.Context) {
-// 	// Get the user email and password from req body
-// 	var body struct {
-// 		Email    string
-// 		Password string
-// 	}
-
-// 	if c.Bind(&body) != nil {
-// 		c.JSON(http.StatusBadRequest, gin.H{
-// 			"error": "Failed to read body",
-// 		})
-// 		return
-// 	}
-
-// 	//Look up requested user
-// 	var user models.User
-// 	initializers.DB.First(&user, "email = ?", body.Email)
-
-// 	if user.ID == 0 {
-// 		c.JSON(http.StatusBadRequest, gin.H{
-// 			"error": "Invalid Email or Password",
-// 		})
-// 		return
-// 	}
-
-// 	//Compare sent in pass with saved user pass hash
-// 	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(body.Password))
-
-// 	if err != nil {
-// 		c.JSON(http.StatusBadRequest, gin.H{
-// 			"error": "Invalid Email or Password",
-// 		})
-// 		return
-// 	}
-
-// 	//Generate a jwt token
-// 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-// 		"sub": user.ID,
-// 		"exp": time.Now().Add(time.Hour * 24 * 30).Unix(),
-// 	})
-
-// 	// Sign and get the complete encoded token as a string using the secret
-// 	tokenString, err := token.SignedString([]byte(os.Getenv("SECRET")))
-// 	if err != nil {
-// 		c.JSON(http.StatusBadRequest, gin.H{
-// 			"error": "Failed to create token",
-// 		})
-// 		return
-// 	}
-
-// 	//Send in back
-// 	c.SetSameSite(http.SameSiteLaxMode)
-// 	c.SetCookie("Authorization", tokenString, 3600*24*30, "", "", false, true)
-// 	c.JSON(http.StatusOK, gin.H{})
-
-// }
-
-// Authorization middlewares
-func Validate(c *gin.Context) {
-	// c.JSON(http.StatusOK, gin.H{
-	// 	"message": "I'm logged in",
-	user, _ := c.Get("user")
-	//if i wanted to do something with user
-	// user.(models.User).Email
-	c.JSON(http.StatusOK, gin.H{
-		"message": user,
-	})
-}
-
 ////////////HANDLERS/////////////
 
 // Handler for user login/index page
 func IndexHandler(c *gin.Context) {
-	// user, _ := c.Get("user")
-	// fmt.Println(user)
-	// c.HTML(http.StatusOK, "index.html", gin.H{
-	// 	"message": user,
-	// })
+	c.Header("Cache-Control", "no-cache,no-store,must-revalidate")
+	c.Header("Expires", "0")
 	c.HTML(http.StatusOK, "index.html", nil)
 }
 
-// Handler for user sign up page
+// Handler for loading user sign up page
+
 func UserSignupHandler(c *gin.Context) {
 	c.HTML(http.StatusOK, "userSignup.html", nil)
 }
@@ -155,7 +44,7 @@ func UserSubmitHandler(c *gin.Context) {
 	result := initializers.DB.Create(&user)
 	if result.Error != nil {
 		c.HTML(http.StatusNotFound, "userSignup.html", gin.H{
-			"error": "Failed to add user into database. Please try again",
+			"error": "Email / Contact Number already exist!",
 		})
 		return
 	}
@@ -164,7 +53,7 @@ func UserSubmitHandler(c *gin.Context) {
 }
 
 // Handler for user Login page
-func UserLoginHandler(c *gin.Context) {
+func LoginHandler(c *gin.Context) {
 	c.Header("Cache-Control", "no-cache,no-store,must-revalidate")
 	c.Header("Expires", "0")
 	userEmail := c.Request.FormValue("Email")
@@ -187,10 +76,9 @@ func UserLoginHandler(c *gin.Context) {
 		})
 		return
 	}
-
-	//Generate a jwt token
+	//Generate a jwt token for user
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"name": user.Name,
+		"name": user.ID,
 		"exp":  time.Now().Add(time.Hour * 24 * 30).Unix(),
 	})
 	// Sign and get the complete encoded token as a string using the secret
@@ -203,11 +91,17 @@ func UserLoginHandler(c *gin.Context) {
 	c.SetCookie("Authorization", tokenString, 3600*24*30, "", "", false, true)
 	//Redirecting to welcome page
 	fmt.Println("--", user.Role, user.Name, "SECRET", tokenString)
-	c.HTML(http.StatusOK, "welcomeUser.html", user.Name)
-
+	//Check whether it is a user or admin
+	if user.Role == "user" {
+		c.HTML(http.StatusOK, "welcomeUser.html", user.Name)
+		// c.Redirect(http.StatusFound, "/UserPanel")
+	} else {
+		c.Redirect(http.StatusFound, "/AdminPanel")
+		// c.HTML(http.StatusOK, "welcomeAdmin.html", user.Name)
+	}
 }
 
-// Handler for User logout
+// Handler for common logout
 func LogoutHandler(c *gin.Context) {
 	c.Header("Cache-Control", "no-cache,no-store,must-revalidate")
 	c.Header("Expires", "0")
@@ -218,6 +112,19 @@ func LogoutHandler(c *gin.Context) {
 	}
 	c.SetSameSite(http.SameSiteLaxMode)
 	c.SetCookie("Authorization", tokenString, -1, "", "", false, true)
+	fmt.Println("Token cleared")
 	c.Redirect(http.StatusFound, "/")
 
+}
+
+// Authorization middlewares
+func Validate(c *gin.Context) {
+	// c.JSON(http.StatusOK, gin.H{
+	// 	"message": "I'm logged in",
+	user, _ := c.Get("user")
+	//if i wanted to do something with user
+	// user.(models.User).Email
+	c.JSON(http.StatusOK, gin.H{
+		"message": user,
+	})
 }

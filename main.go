@@ -24,9 +24,13 @@ func main() {
 
 	//Welcome page
 	r.GET("/", controllers.IndexHandler)
+	// r.GET("/", middleware.RequireAuth, controllers.IndexHandler)
 
-	//User Welcome page
-	r.POST("/welcomeUser", controllers.UserLoginHandler)
+	//Welcome Login page
+	r.POST("/welcome", controllers.LoginHandler)
+
+	//Admin Welcome
+	r.GET("/AdminPanel", controllers.AdminPanelHandler)
 
 	//Logout handler
 	r.GET("/logout", controllers.LogoutHandler)
@@ -36,6 +40,20 @@ func main() {
 
 	//User Submit on Signup page
 	r.POST("/user-Submit", controllers.UserSubmitHandler)
+
+	//Admin Create new user
+	r.GET("/createUser", controllers.AdminCreateHandler)
+
+	//Admin submit action on new user
+	r.POST("/admin-Submit", controllers.AdminSubmitHandler)
+
+	r.GET("/AdminPanel/editAdmin", controllers.EditAdminHandler)
+
+	r.GET("/AdminPanel/delete", controllers.DeleteHandler)
+
+	r.POST("/update", controllers.UpdateHandler)
+
+	r.GET("/searchUser", controllers.SearchHandler)
 
 	// r.POST("/signup", controllers.Signup)
 	// r.POST("/login", controllers.Login)

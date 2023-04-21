@@ -14,6 +14,14 @@ import (
 
 func RequireAuth(c *gin.Context) {
 
+	defer func() {
+
+		if err := recover(); err != nil {
+			c.HTML(http.StatusOK, "index.html", gin.H{})
+			fmt.Printf("\n\nRecovered from panic. %s\n\n", err)
+		}
+	}()
+
 	//Get the cookie off request
 	tokenString, err := c.Cookie("Authorization")
 	if err != nil {
@@ -21,8 +29,7 @@ func RequireAuth(c *gin.Context) {
 	}
 
 	//Decode/validate it
-
-	// Parse takes the token string and a function for looking up the key. The latter is especially
+	// Parse takes the token string and a function for looking up the key.
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
@@ -32,7 +39,8 @@ func RequireAuth(c *gin.Context) {
 		return []byte(os.Getenv("SECRET")), nil
 	})
 
-	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid && token != nil {
+
 		//Check the expiration
 		if float64(time.Now().Unix()) > claims["exp"].(float64) {
 			c.AbortWithStatus(http.StatusUnauthorized)
@@ -41,9 +49,10 @@ func RequireAuth(c *gin.Context) {
 
 		//Find the user with token sub
 		var user models.User
-		initializers.DB.First(&user, claims["sub"])
+		initializers.DB.First(&user, claims["ID"])
 
 		if user.ID == 0 {
+			c.Redirect(http.StatusFound, "/")
 			c.AbortWithStatus(http.StatusUnauthorized)
 		}
 
@@ -54,7 +63,8 @@ func RequireAuth(c *gin.Context) {
 
 		c.Next()
 	} else {
-		c.AbortWithStatus(http.StatusUnauthorized)
+		c.HTML(http.StatusOK, "index.html", gin.H{})
+		// c.AbortWithStatus(http.StatusUnauthorized)
 	}
 
 }
