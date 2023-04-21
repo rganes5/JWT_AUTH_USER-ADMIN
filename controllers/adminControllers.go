@@ -10,6 +10,8 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+////////////ADMIN-HANDLERS/////////////
+
 // Handler for creating a new user
 func AdminSubmitHandler(c *gin.Context) {
 	userName := c.Request.FormValue("Name")
@@ -119,11 +121,3 @@ func SearchHandler(c *gin.Context) {
 		})
 	}
 }
-
-// var user []models.User
-// id := c.Query("id")
-// if err := initializers.DB.Where("id = ?", id).Find(&user).Error; err != nil {
-// 	fmt.Println("Failed to Edit User")
-// }
-// c.HTML(http.StatusOK, "editAdmin.html", gin.H{
-// 	"data": user,

@@ -13,6 +13,7 @@ func init() {
 	initializers.SyncDatabase()
 }
 
+// Main func
 func main() {
 	// Returns a new instance of the Gin engine with the default middleware already attached.
 	r := gin.Default()
@@ -26,20 +27,24 @@ func main() {
 	r.GET("/", controllers.IndexHandler)
 	// r.GET("/", middleware.RequireAuth, controllers.IndexHandler)
 
-	//Welcome Login page
+	//USER
+
+	//Common Login page Route
 	r.POST("/welcome", controllers.LoginHandler)
 
-	//Admin Welcome
-	r.GET("/AdminPanel", controllers.AdminPanelHandler)
-
-	//Logout handler
-	r.GET("/logout", controllers.LogoutHandler)
-
-	//Signup page
+	//Signup page Route
 	r.GET("/userSignup", controllers.UserSignupHandler)
 
 	//User Submit on Signup page
 	r.POST("/user-Submit", controllers.UserSubmitHandler)
+
+	//Logout Route
+	r.GET("/logout", controllers.LogoutHandler)
+
+	//ADMIN
+
+	//Admin Welcome
+	r.GET("/AdminPanel", controllers.AdminPanelHandler)
 
 	//Admin Create new user
 	r.GET("/createUser", controllers.AdminCreateHandler)
@@ -47,22 +52,26 @@ func main() {
 	//Admin submit action on new user
 	r.POST("/admin-Submit", controllers.AdminSubmitHandler)
 
+	//Admin edit
 	r.GET("/AdminPanel/editAdmin", controllers.EditAdminHandler)
 
+	//Admin delete
 	r.GET("/AdminPanel/delete", controllers.DeleteHandler)
 
+	//Admin update
 	r.POST("/update", controllers.UpdateHandler)
 
+	//Admin Search
 	r.GET("/searchUser", controllers.SearchHandler)
 
 	// r.POST("/signup", controllers.Signup)
 	// r.POST("/login", controllers.Login)
 	// r.GET("/validate", middleware.RequireAuth, controllers.Validate)
-
 	// 	c.JSON(200, gin.H{
 	// 		"message": "pong",
 	// 	})
 	// })
 
+	//Run attaches the router to a http.Server and starts listening and serving HTTP requests.
 	r.Run() // listen and serve on 0.0.0.0:8080}
 }

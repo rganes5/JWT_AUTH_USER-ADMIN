@@ -9,17 +9,19 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/rganes5/go-jwt-auth/initializers"
+	"github.com/rganes5/go-jwt-auth/middleware"
 	"github.com/rganes5/go-jwt-auth/models"
 	"golang.org/x/crypto/bcrypt"
 )
 
-////////////HANDLERS/////////////
+////////////USER-HANDLERS/////////////
 
 // Handler for user login/index page
 func IndexHandler(c *gin.Context) {
 	c.Header("Cache-Control", "no-cache,no-store,must-revalidate")
 	c.Header("Expires", "0")
-	c.HTML(http.StatusOK, "index.html", nil)
+	middleware.RequireAuth(c)
+	// c.HTML(http.StatusOK, "index.html", nil)
 }
 
 // Handler for loading user sign up page
@@ -78,8 +80,8 @@ func LoginHandler(c *gin.Context) {
 	}
 	//Generate a jwt token for user
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"name": user.ID,
-		"exp":  time.Now().Add(time.Hour * 24 * 30).Unix(),
+		"ID":  user.ID,
+		"exp": time.Now().Add(time.Hour * 24 * 30).Unix(),
 	})
 	// Sign and get the complete encoded token as a string using the secret
 	tokenString, err := token.SignedString([]byte(os.Getenv("SECRET")))
@@ -117,14 +119,14 @@ func LogoutHandler(c *gin.Context) {
 
 }
 
-// Authorization middlewares
-func Validate(c *gin.Context) {
-	// c.JSON(http.StatusOK, gin.H{
-	// 	"message": "I'm logged in",
-	user, _ := c.Get("user")
-	//if i wanted to do something with user
-	// user.(models.User).Email
-	c.JSON(http.StatusOK, gin.H{
-		"message": user,
-	})
-}
+// // Authorization middlewares
+// func Validate(c *gin.Context) {
+// 	// c.JSON(http.StatusOK, gin.H{
+// 	// 	"message": "I'm logged in",
+// 	user, _ := c.Get("user")
+// 	//if i wanted to do something with user
+// 	// user.(models.User).Email
+// 	c.JSON(http.StatusOK, gin.H{
+// 		"message": user,
+// 	})
+// }
