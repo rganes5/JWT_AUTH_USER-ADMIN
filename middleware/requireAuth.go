@@ -81,8 +81,10 @@ func RequireAuth(c *gin.Context) {
 		}
 		if user.Role == "user" {
 			c.HTML(http.StatusOK, "welcomeUser.html", user.Name)
+			// c.Redirect(http.StatusFound, "/welcome")
 		} else {
-			c.HTML(http.StatusOK, "welcomeAdmin.html", nil)
+			// c.HTML(http.StatusOK, "welcomeAdmin.html", nil)
+			c.Redirect(http.StatusFound, "/AdminPanel")
 		}
 
 		//Attach to req
@@ -96,3 +98,16 @@ func RequireAuth(c *gin.Context) {
 	}
 
 }
+
+//	func ValidateCookie(c *gin.Context) bool {
+//		result := true
+//		cookie, _ := c.Cookie("Authorization")
+//		if cookie == "" {
+//			fmt.Println("cookie not found")
+//			result = false
+//		} else {
+//			fmt.Println("cookie Present", cookie)
+//			result = true
+//		}
+//		return result
+//	}

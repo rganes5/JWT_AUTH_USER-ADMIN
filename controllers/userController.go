@@ -24,40 +24,8 @@ func IndexHandler(c *gin.Context) {
 	// c.HTML(http.StatusOK, "index.html", nil)
 }
 
-// Handler for loading user sign up page
-
-func UserSignupHandler(c *gin.Context) {
-	c.HTML(http.StatusOK, "userSignup.html", nil)
-}
-
-// Handler for User sign up
-func UserSubmitHandler(c *gin.Context) {
-	userName := c.Request.FormValue("Name")
-	userEmail := c.Request.FormValue("Email")
-	userPassword := []byte(c.Request.FormValue("Password"))
-	userNumber := c.Request.FormValue("Number")
-	// Hash the password with bcrypt
-	hashedPassword, err := bcrypt.GenerateFromPassword(userPassword, bcrypt.DefaultCost)
-	if err != nil {
-		panic("Failed To Hash Password")
-	}
-	//Inputting into the database
-	user := models.User{Name: userName, Email: userEmail, Password: string(hashedPassword), Number: userNumber}
-	result := initializers.DB.Create(&user)
-	if result.Error != nil {
-		c.HTML(http.StatusNotFound, "userSignup.html", gin.H{
-			"error": "Email / Contact Number already exist!",
-		})
-		return
-	}
-	c.Redirect(http.StatusFound, "/")
-
-}
-
 // Handler for user Login page
 func LoginHandler(c *gin.Context) {
-	c.Header("Cache-Control", "no-cache,no-store,must-revalidate")
-	c.Header("Expires", "0")
 	userEmail := c.Request.FormValue("Email")
 	userPassword := []byte(c.Request.FormValue("Password"))
 	//Look up requested user
@@ -103,6 +71,35 @@ func LoginHandler(c *gin.Context) {
 	}
 }
 
+// Handler for loading user sign up page
+
+func UserSignupHandler(c *gin.Context) {
+	c.HTML(http.StatusOK, "userSignup.html", nil)
+}
+
+// Handler for User sign up
+func UserSubmitHandler(c *gin.Context) {
+	userName := c.Request.FormValue("Name")
+	userEmail := c.Request.FormValue("Email")
+	userPassword := []byte(c.Request.FormValue("Password"))
+	userNumber := c.Request.FormValue("Number")
+	// Hash the password with bcrypt
+	hashedPassword, err := bcrypt.GenerateFromPassword(userPassword, bcrypt.DefaultCost)
+	if err != nil {
+		panic("Failed To Hash Password")
+	}
+	//Inputting into the database
+	user := models.User{Name: userName, Email: userEmail, Password: string(hashedPassword), Number: userNumber}
+	result := initializers.DB.Create(&user)
+	if result.Error != nil {
+		c.HTML(http.StatusNotFound, "userSignup.html", gin.H{
+			"error": "Email / Contact Number already exist!",
+		})
+		return
+	}
+	c.Redirect(http.StatusFound, "/")
+}
+
 // Handler for common logout
 func LogoutHandler(c *gin.Context) {
 	c.Header("Cache-Control", "no-cache,no-store,must-revalidate")
@@ -116,8 +113,15 @@ func LogoutHandler(c *gin.Context) {
 	c.SetCookie("Authorization", tokenString, -1, "", "", false, true)
 	fmt.Println("Token cleared")
 	c.Redirect(http.StatusFound, "/")
-
 }
+
+//Cookie Check
+// ok := middleware.ValidateCookie(c)
+// 	if !ok {
+// 		c.HTML(http.StatusOK, "login.html", nil)
+// 		return
+// 	} else {
+// 	}
 
 // // Authorization middlewares
 // func Validate(c *gin.Context) {

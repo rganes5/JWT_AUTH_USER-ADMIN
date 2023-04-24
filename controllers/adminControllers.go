@@ -12,6 +12,25 @@ import (
 
 ////////////ADMIN-HANDLERS/////////////
 
+// Handler to load the welcome page of admin
+func AdminPanelHandler(c *gin.Context) {
+	var user []models.User
+	if err := initializers.DB.Where("role!=?", "admin").Find(&user).Error; err != nil {
+		fmt.Println("Error loading the database")
+	}
+	c.HTML(http.StatusOK, "welcomeAdmin.html", gin.H{
+		"data": user,
+	})
+	for _, v := range user {
+		fmt.Println(v.ID, v.Name, v.Email, v.Password, v.Number, v.Role)
+	}
+}
+
+// Handler to load new user page
+func AdminCreateHandler(c *gin.Context) {
+	c.HTML(http.StatusOK, "createUser.html", nil)
+}
+
 // Handler for creating a new user
 func AdminSubmitHandler(c *gin.Context) {
 	userName := c.Request.FormValue("Name")
@@ -19,6 +38,7 @@ func AdminSubmitHandler(c *gin.Context) {
 	userPassword := []byte(c.Request.FormValue("Password"))
 	userNumber := c.Request.FormValue("Number")
 	userRole := c.Request.FormValue("Role")
+	fmt.Println("This is the role created", userRole)
 	// Hash the password with bcrypt
 	hashedPassword, err := bcrypt.GenerateFromPassword(userPassword, bcrypt.DefaultCost)
 	if err != nil {
@@ -34,25 +54,6 @@ func AdminSubmitHandler(c *gin.Context) {
 		return
 	}
 	c.Redirect(http.StatusFound, "/AdminPanel")
-}
-
-// Handler to load the welcome page of admin
-func AdminPanelHandler(c *gin.Context) {
-	var user []models.User
-	if err := initializers.DB.Where("role!=?", "admin").Find(&user).Error; err != nil {
-		fmt.Println("Error loading the database")
-	}
-	c.HTML(http.StatusOK, "welcomeAdmin.html", gin.H{
-		"data": user,
-	})
-	for _, v := range user {
-		fmt.Println(v.ID, v.Name, v.Email, v.Password, v.Number, v.Role)
-	}
-}
-
-// Handler to get to load new user page
-func AdminCreateHandler(c *gin.Context) {
-	c.HTML(http.StatusOK, "createUser.html", nil)
 }
 
 // Handler to edit the user details
@@ -121,3 +122,11 @@ func SearchHandler(c *gin.Context) {
 		})
 	}
 }
+
+//Cookie Check
+// ok := middleware.ValidateCookie(c)
+// 	if !ok {
+// 		c.HTML(http.StatusOK, "login.html", nil)
+// 		return
+// 	} else {
+// 	}
