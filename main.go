@@ -64,14 +64,6 @@ func main() {
 	//Admin Search
 	r.GET("/searchUser", controllers.SearchHandler)
 
-	// r.POST("/signup", controllers.Signup)
-	// r.POST("/login", controllers.Login)
-	// r.GET("/validate", middleware.RequireAuth, controllers.Validate)
-	// 	c.JSON(200, gin.H{
-	// 		"message": "pong",
-	// 	})
-	// })
-
 	//Run attaches the router to a http.Server and starts listening and serving HTTP requests.
 	r.Run() // listen and serve on 0.0.0.0:8080}
 }
