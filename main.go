@@ -13,7 +13,7 @@ func init() {
 	initializers.SyncDatabase()
 }
 
-// This is docerized now
+// This is dockerized now
 // Main func
 func main() {
 	// Returns a new instance of the Gin engine with the default middleware already attached.
